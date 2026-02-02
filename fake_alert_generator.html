@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phishing Alert Demo</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 24px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .panel {
+      max-width: 960px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    .controls {
+      background: #020617;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 13px;
+    }
+
+    .controls label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #9ca3af;
+    }
+
+    .controls select,
+    .controls input[type="text"],
+    .controls textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 13px;
+      resize: vertical;
+    }
+
+    .controls textarea {
+      min-height: 80px;
+      max-height: 400px;
+    }
+
+    .controls small {
+      display: block;
+      margin: -6px 0 8px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .controls button {
+      padding: 6px 10px;
+      margin-right: 6px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-primary {
+      background: #22c55e;
+      color: #022c22;
+      font-weight: 600;
+    }
+
+    .btn-secondary {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+    }
+
+    .preview-wrapper {
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      border-radius: 8px;
+      padding: 24px;
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Фоновый «браузер» */
+    .browser-shell {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      background: #020617;
+      border: 1px solid #111827;
+    }
+
+    .browser-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: #020617;
+      border-bottom: 1px solid #111827;
+      font-size: 11px;
+      color: #9ca3af;
+      gap: 8px;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 4px;
+    }
+
+    .traffic-lights span {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .tl-red    { background: #f97373; }
+    .tl-yellow { background: #facc15; }
+    .tl-green  { background: #4ade80; }
+
+    .browser-url {
+      flex: 1;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #9ca3af;
+      font-family: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .browser-content {
+      position: relative;
+      background: #020617;
+      min-height: 900px;
+      padding: 24px;
+    }
+
+    /* Сам поп-ап */
+    .popup {
+      position: absolute;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 360px;
+      border-radius: 8px;
+      border: 1px solid #b91c1c;
+      background: #111827;
+      color: #fef2f2;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.75);
+      overflow: hidden;
+      animation: popIn 180ms ease-out;
+      font-size: 13px;
+    }
+
+    .popup-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: linear-gradient(to right, #7f1d1d, #b91c1c);
+      color: #fee2e2;
+    }
+
+    .popup-header-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .popup-header-title span.icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 2px solid #fee2e2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .popup-header-close {
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .popup-body {
+      padding: 12px 12px 4px;
+    }
+
+    .popup-main-text {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .popup-sub-text {
+      font-size: 12px;
+      color: #fecaca;
+      margin-bottom: 8px;
+    }
+
+    .popup-details {
+      background: #0b1120;
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+      white-space: pre-line;
+    }
+
+    .popup-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 12px 10px;
+      background: #020617;
+      border-top: 1px solid #1f2937;
+    }
+
+    .btn-popup-primary,
+    .btn-popup-secondary {
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: none;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-popup-primary {
+      background: #f97316;
+      color: #111827;
+    }
+
+    .btn-popup-secondary {
+      background: #020617;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -6px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Phishing Alert Popup Demo</h1>
+  <div class="panel">
+    <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
+    <div class="controls">
+      <label for="scenario">Scenario</label>
+      <select id="scenario">
+        <option value="virus">Fake antivirus / virus alert</option>
+        <option value="login">Suspicious login attempt</option>
+        <option value="bank">Bank / payment issue</option>
+        <option value="mfa">Account verification / MFA</option>
+        <option value="custom">Custom (Empty)</option>
+      </select>
+
+      <label for="fakeBrand">Fake "brand" (OS / AV / service)</label>
+      <input type="text" id="fakeBrand" value="Windows Defender Security Center" />
+
+      <label for="headline">Main warning text</label>
+      <input type="text" id="headline" />
+
+      <label for="subline">Secondary text (urgency / threat)</label>
+      <input type="text" id="subline" />
+
+      <label for="details">Details / scare text</label>
+      <textarea id="details"></textarea>
+      <small>Use line breaks to simulate multi-line "scan results" or technical jargon.</small>
+
+      <label>Buttons</label>
+      <input type="text" id="btnPrimary" value="Clean device now" />
+      <input type="text" id="btnSecondary" value="Ignore risk" />
+
+      <button class="btn-primary" id="btnApply">Update popup</button>
+      <button class="btn-secondary" id="btnRandom">Randomize text</button>
+
+      <p class="hint">
+        ? <strong>FIXED:</strong> "Update popup" now correctly uses your manual edits instead of resetting to defaults.<br />
+        <br />
+        Press <strong>F11</strong> for fullscreen demo.
+      </p>
+    </div>
+
+    <!-- ПРЕВЬЮ «БРАУЗЕРА» С ПОП-АПОМ -->
+    <div class="preview-wrapper">
+      <div class="browser-shell">
+        <div class="browser-bar">
+          <div class="traffic-lights">
+            <span class="tl-red"></span>
+            <span class="tl-yellow"></span>
+            <span class="tl-green"></span>
+          </div>
+          <input class="browser-url" value="https://security-check-1234.example.com/scan" />
+        </div>
+        <div class="browser-content">
+          <div class="popup" id="popup">
+            <div class="popup-header">
+              <div class="popup-header-title">
+                <span class="icon">!</span>
+                <span id="popupBrand">Windows Defender Security Center</span>
+              </div>
+              <div class="popup-header-close" onclick="document.getElementById('popup').style.display='none'">?</div>
+            </div>
+            <div class="popup-body">
+              <div class="popup-main-text" id="popupHeadline"></div>
+              <div class="popup-sub-text" id="popupSubline"></div>
+              <div class="popup-details" id="popupDetails"></div>
+            </div>
+            <div class="popup-footer">
+              <button class="btn-popup-secondary" id="popupBtnSecondary"></button>
+              <button class="btn-popup-primary" id="popupBtnPrimary"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenarioSelect = document.getElementById('scenario');
+    const fakeBrandInput = document.getElementById('fakeBrand');
+    const headlineInput = document.getElementById('headline');
+    const sublineInput = document.getElementById('subline');
+    const detailsInput = document.getElementById('details');
+    const btnPrimaryInput = document.getElementById('btnPrimary');
+    const btnSecondaryInput = document.getElementById('btnSecondary');
+
+    const popup = document.getElementById('popup');
+    const popupBrand = document.getElementById('popupBrand');
+    const popupHeadline = document.getElementById('popupHeadline');
+    const popupSubline = document.getElementById('popupSubline');
+    const popupDetails = document.getElementById('popupDetails');
+    const popupBtnPrimary = document.getElementById('popupBtnPrimary');
+    const popupBtnSecondary = document.getElementById('popupBtnSecondary');
+
+    const scenarios = {
+      virus: {
+        brand: "Windows Defender Security Center",
+        headline: "CRITICAL THREAT DETECTED: 5 viruses found on your PC",
+        subline: "Your system is severely damaged. Immediate action is required to prevent data loss.",
+        details: "? Trojan:Win32/PasswordStealer detected in C:\\Users\\Public\\\n? Adware:JS/PopClick found in browser extensions\n? Riskware:RemoteAccess tool is active\n\nIf you close this window, your files, photos and passwords may be permanently exposed.",
+        btnPrimary: "Clean device now",
+        btnSecondary: "Continue unprotected"
+      },
+      login: {
+        brand: "Secure Account Center",
+        headline: "Unusual sign-in attempt blocked",
+        subline: "Someone tried to sign in to your account from a new device.",
+        details: "Location: Moscow, Russian Federation (approximate)\nDevice: Windows 10; Chrome 119\nTime: 02 Feb 2026, 11:21 (MSK)\n\nIf this was not you, your account may be compromised. We recommend immediate verification.",
+        btnPrimary: "Review activity",
+        btnSecondary: "This was me"
+      },
+      bank: {
+        brand: "Online Banking Security",
+        headline: "Your card has been temporarily limited",
+        subline: "Suspicious payment attempt was blocked for your protection.",
+        details: "Merchant: *UNKNOWN* DIGITAL SERVICES\nAmount: 899.00 EUR\nStatus: Declined\n\nTo restore full access and avoid card blocking, please verify your identity within the next 15 minutes.",
+        btnPrimary: "Verify card now",
+        btnSecondary: "Ignore and risk block"
+      },
+      mfa: {
+        brand: "Account Verification Service",
+        headline: "Your account will be locked in 10 minutes",
+        subline: "Mandatory security update has not been completed.",
+        details: "We detected outdated security settings on your account.\nContinued use without verification violates our updated Terms of Service.\n\nTo avoid permanent loss of access, complete a quick 2-step verification now.",
+        btnPrimary: "Start verification",
+        btnSecondary: "Remind me later"
+      }
+    };
+
+    // Основная функция отрисовки полей в поп-ап
+    function renderPopup() {
+      popup.style.display = "block";
+      popupBrand.textContent = fakeBrandInput.value || "Security Center";
+      popupHeadline.textContent = headlineInput.value || "Security warning";
+      popupSubline.textContent = sublineInput.value || "Suspicious activity detected on this device.";
+      popupDetails.textContent = detailsInput.value || "Automatic scan has identified potentially unwanted software and suspicious activity on your system.";
+      popupBtnPrimary.textContent = btnPrimaryInput.value || "Fix now";
+      popupBtnSecondary.textContent = btnSecondaryInput.value || "Ignore";
+    }
+
+    // Загрузка пресета в поля ввода
+    function loadScenarioData(scenarioKey) {
+      if (scenarios[scenarioKey]) {
+        const data = scenarios[scenarioKey];
+        fakeBrandInput.value = data.brand;
+        headlineInput.value = data.headline;
+        sublineInput.value = data.subline;
+        detailsInput.value = data.details;
+        btnPrimaryInput.value = data.btnPrimary;
+        btnSecondaryInput.value = data.btnSecondary;
+      } else if (scenarioKey === 'custom') {
+        // Опционально: можно очищать поля при выборе Custom, если нужно
+        // fakeBrandInput.value = "";
+        // headlineInput.value = "";
+        // ...
+      }
+      renderPopup();
+    }
+
+    // Кнопка "Update popup" теперь просто вызывает рендер текущих полей
+    document.getElementById('btnApply').addEventListener('click', () => {
+      renderPopup(); 
+    });
+
+    // Кнопка "Randomize" добавляет текст и обновляет
+    document.getElementById('btnRandom').addEventListener('click', () => {
+      const urgentPhrases = [
+        "\n\nYour data will be permanently deleted.",
+        "\n\nClosing this window may result in irreversible damage.",
+        "\n\nAttackers may already have full access to your passwords.",
+        "\n\nYour photos and documents are at risk of public exposure.",
+        "\n\nYour banking details may have been stolen."
+      ];
+      const idx = Math.floor(Math.random() * urgentPhrases.length);
+      detailsInput.value += urgentPhrases[idx];
+      renderPopup();
+    });
+
+    // При смене выпадающего списка — загружаем пресет
+    scenarioSelect.addEventListener('change', () => {
+      loadScenarioData(scenarioSelect.value);
+    });
+
+    // Инициализация при загрузке
+    loadScenarioData('virus');
+  </script>
+</body>
+</html>
