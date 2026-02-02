@@ -6,4 +6,5 @@ You can craft a scary looking window with your company URL in a browser URL fiel
 Just type in window title, warning, scare text and names for buttons.
 
 Example:
+
 <img width="533" height="493" alt="image" src="https://github.com/user-attachments/assets/2d0c40b7-3ad2-4e43-8d58-9a97bec7ea6a" />
